@@ -28,5 +28,5 @@ song2.wav
 ```
 4. Then, save your file.
 5. In the app, type the path to your playlist file ex. `playlist.jcmpl`
-6. Click "load playlist
+6. Click "load playlist"
 7. Press start and play your music!
