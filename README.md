@@ -3,6 +3,7 @@ The successor to CMusic!
 
 # Notes
 This was made in JDK 23, please install it if you plan on using/contirbuting this JCMusic!
+Alongside this certain features haven't been ported yet, such as themes and the legacy playlist format.
 
 # How to compile?
 1. Firstly, ensure that the `compile.sh` is executable by running `chmod +X compile.sh`
