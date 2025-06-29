@@ -1,6 +1,10 @@
 # JCMusic
 The successor to CMusic!
 
+# How do I run the application?
+1. Install Java 23 here -> https://www.oracle.com/java/technologies/javase/jdk23-archive-downloads.html
+2. Open the jar file!
+
 # Notes
 **Lots of things are subject to change considering this is still a beta**
 
