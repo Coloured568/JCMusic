@@ -2,7 +2,7 @@
 The successor to CMusic!
 
 # How do I run the application?
-1. Install Java 24 here -> https://www.oracle.com/java/technologies/javase/jdk24-archive-downloads.html
+1. Install Java 24 here -> [https://www.oracle.com/java/technologies/javase/jdk24-archive-downloads.html](https://www.oracle.com/java/technologies/downloads/#java24)
 2. Open the jar file!
 
 # Notes
