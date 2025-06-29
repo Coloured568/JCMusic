@@ -11,6 +11,7 @@ The successor to CMusic!
 This was made in JDK 23, please install it if you plan on using/contirbuting this JCMusic!
 Alongside this certain features haven't been ported yet, such as themes and the legacy playlist format.
 MP3s are not supported yet.
+Supports: the `.wav ,.aif, .aiff, .au, .snd` audio formats.
 
 # How to compile?
 1. Firstly, ensure that the `compile.sh` is executable by running `chmod +X compile.sh`
