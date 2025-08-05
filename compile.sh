@@ -5,8 +5,8 @@
 # ================================
 OUTPUT_DIR="out"
 JAR_NAME="JCMusic.jar"
-MAIN_CLASS="JCMusic.JCMusic"     # Full name with package
-MANIFEST_VERSION="1.0"           # You can override this
+MAIN_CLASS="JCMusic.Main"
+MANIFEST_VERSION="1.1"
 
 # ================================
 # CLEAN PREVIOUS OUTPUT
