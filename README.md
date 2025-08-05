@@ -5,6 +5,11 @@ The successor to CMusic!
 1. Install Java 24 here -> [https://www.oracle.com/java/technologies/javase/jdk24-archive-downloads.html](https://www.oracle.com/java/technologies/downloads/#java24)
 2. Open the jar file!
 
+# Command line arguments
+--no-gui: runs the app in CLI mode
+ex: `java -jar JCMusic.jar --no-gui`
+If you want the gui just launch the jar as normal.
+
 # Notes
 **Lots of things are subject to change considering this is still a beta**
 
