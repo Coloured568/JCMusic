@@ -20,6 +20,8 @@ Alongside this certain features haven't been ported yet, such as themes and the 
 MP3s are not supported yet.
 Supports: the `.wav ,.aif, .aiff, .au, .snd` audio formats.
 
+**For linux users**: WayLand is NOT supported and the GUI will go unresponsive!
+
 # How to compile?
 1. Firstly, ensure that the `compile.sh` is executable by running `chmod +X compile.sh`
 2. Run `./compile.sh`
