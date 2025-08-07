@@ -36,16 +36,9 @@ Supports: the `.wav ,.aif, .aiff, .au, .snd` audio formats.
 2. Run `./compile.sh`
 3. The JAR file should be outputted!
 
-# Well how do I create and load a playlist?
-Since it's still in development, it's still rather clunky.
-1. Create a file that ends with **".jcmpl"**
-2. Add the paths to your audio files (do not forget line breaks).
-3. It should look something like:
-```
-song1.wav
-song2.wav
-```
-4. Then, save your file.
-5. In the app, type the path to your playlist file ex. `playlist.jcmpl`
-6. Click "load playlist"
-7. Press start and play your music!
+# Well how do I add or remove specific songs from a playlist?
+Since it's still in development, it's still rather tedious.
+1. Open your `*.jcmpl* file
+2. Add/Remove specific songs.
+
+Software design is my passion, how could you tell?
