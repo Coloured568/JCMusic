@@ -18,6 +18,9 @@ If you want the gui just launch the jar as normal.
 3. Click import songs to finalize the playlist creation
 **Note:** this creates a new playlist file everytime, if you use an old playlist file name it WILL overwrite it completely (this will be subject to change).
 
+# Customization
+Simply just modify the colors in `config.txt`.
+
 # Notes
 **Lots of things are subject to change considering this is still a beta**
 
