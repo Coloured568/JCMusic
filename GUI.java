@@ -2,14 +2,20 @@ package JCMusic;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
+import java.util.Scanner;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.sound.sampled.Clip;
 import JCMusic.logic.Audio;
+import JCMusic.logic.PlaylistCreator;
 import JCMusic.logic.Playlists;
 
 public class GUI {
     public static int index;
+    public static String background;
+    public static String foreground;
 
     public static void guiApp() {
         final boolean[] isSeeking = { false };
@@ -21,52 +27,90 @@ public class GUI {
         JFrame frame = new JFrame("JCMusic");
         JPanel panel = new JPanel();
 
-        panel.setBackground(new java.awt.Color(0, 0, 0));
-        panel.setForeground(new java.awt.Color(255, 255, 255));
+        try {
+            File config = new File("config.txt");
+            if(config.createNewFile()) {
+                FileWriter writer = new FileWriter(config);
+                System.out.println("Config file generated!");
+                writer.write("BLACK"); // background color
+                writer.write(System.lineSeparator());
+                writer.write("WHITE"); // foreground color
+                writer.write(System.lineSeparator());
+                writer.write("// 1st line represents the background color");
+                writer.write(System.lineSeparator());
+                writer.write("// 2nd line represents the foreground color");
+                writer.close();
+                // parse colors
+                Scanner reader = new Scanner(config);
+                background = reader.nextLine().trim();
+                foreground = reader.nextLine().trim();
+                reader.close();
+
+            } else {
+                Scanner reader = new Scanner(config);
+                background = reader.nextLine().trim();
+                foreground = reader.nextLine().trim();
+            }
+        } 
+        catch (Exception e) {
+            System.out.printf("error %s\n", e);
+        }
+
+        Color backgroundColor = parseColor(background);
+        Color foregroundColor = parseColor(foreground);
+
+        panel.setBackground(backgroundColor);
+        panel.setForeground(foregroundColor);
         panel.setLayout(new GridLayout(0, 1, 2, 2));
 
         JLabel title = new JLabel("JCMusic", SwingConstants.CENTER);
-        title.setForeground(new java.awt.Color(255, 255, 255));
+        title.setForeground(foregroundColor);
 
         JLabel songTitle = new JLabel("No song playing", SwingConstants.CENTER);
-        songTitle.setForeground(new java.awt.Color(255, 255, 255));
+        songTitle.setForeground(foregroundColor);
 
         JSlider timeSlider = new JSlider();
-        timeSlider.setForeground(new java.awt.Color(255, 255, 255));
-        timeSlider.setBackground(new java.awt.Color(0, 0, 0));
+        timeSlider.setForeground(foregroundColor);
+        timeSlider.setBackground(backgroundColor);
 
         JButton playButton = new JButton("Start");
-        playButton.setForeground(new java.awt.Color(255, 255, 255));
-        playButton.setBackground(new java.awt.Color(0, 0, 0));
+        playButton.setForeground(foregroundColor);
+        playButton.setBackground(backgroundColor);
 
         JButton pauseButton = new JButton("Pause");
-        pauseButton.setForeground(new java.awt.Color(255, 255, 255));
-        pauseButton.setBackground(new java.awt.Color(0, 0, 0));
+        pauseButton.setForeground(foregroundColor);
+        pauseButton.setBackground(backgroundColor);
 
         JButton resumeButton = new JButton("Resume");
-        resumeButton.setForeground(new java.awt.Color(255, 255, 255));
-        resumeButton.setBackground(new java.awt.Color(0, 0, 0));
+        resumeButton.setForeground(foregroundColor);
+        resumeButton.setBackground(backgroundColor);
 
         JButton skipButton = new JButton("Skip");
-        skipButton.setForeground(new java.awt.Color(255, 255, 255));
-        skipButton.setBackground(new java.awt.Color(0, 0, 0));
+        skipButton.setForeground(foregroundColor);
+        skipButton.setBackground(backgroundColor);
 
         JButton previousButton = new JButton("Previous");
-        previousButton.setForeground(new java.awt.Color(255, 255, 255));
-        previousButton.setBackground(new java.awt.Color(0, 0, 0));
+        previousButton.setForeground(foregroundColor);
+        previousButton.setBackground(backgroundColor);
+
+        JButton createPlaylistButton = new JButton("Playlist editor");
+        createPlaylistButton.setForeground(foregroundColor);
+        createPlaylistButton.setBackground(backgroundColor);
 
         JButton loadPlaylistButton = new JButton("Load playlist");
-        loadPlaylistButton.setForeground(new java.awt.Color(255, 255, 255));
-        loadPlaylistButton.setBackground(new java.awt.Color(0, 0, 0));
+        loadPlaylistButton.setForeground(foregroundColor);
+        loadPlaylistButton.setBackground(backgroundColor);
 
         JTextField playlistName = new JTextField("Enter playlist filepath here (*.cmpl)");
-        playlistName.setForeground(new java.awt.Color(255, 255, 255));
-        playlistName.setBackground(new java.awt.Color(0, 0, 0));
+        playlistName.setForeground(foregroundColor);
+        playlistName.setBackground(backgroundColor);
+
 
         panel.add(title);
         panel.add(songTitle);
         panel.add(timeSlider);
         panel.add(loadPlaylistButton);
+        panel.add(createPlaylistButton);
         panel.add(playButton);
         panel.add(resumeButton);
         panel.add(pauseButton);
@@ -75,19 +119,25 @@ public class GUI {
         panel.add(playlistName);
         frame.add(panel);
 
+        createPlaylistButton.addActionListener(e -> {
+            new Thread(() -> {
+                createPlaylistGUI();
+            }).start();
+        });
+
         // Load playlist on background thread
         loadPlaylistButton.addActionListener(e -> {
             new Thread(() -> {
-                try {
-                    playlists.loadPlaylist(playlistName.getText());
-                    SwingUtilities.invokeLater(() -> {
-                        songTitle.setText("Playlist loaded: " + playlistName.getText());
-                    });
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }).start();
-        });
+                    try {
+                        playlists.loadPlaylist(playlistName.getText());
+                        SwingUtilities.invokeLater(() -> {
+                            songTitle.setText("Playlist loaded: " + playlistName.getText());
+                        });
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }).start();
+            });
 
         // Play button action on background thread
         playButton.addActionListener(e -> {
@@ -212,11 +262,105 @@ public class GUI {
         frame.setVisible(true);
     }
 
+    public static void createPlaylistGUI() {
+        PlaylistCreator pc = new PlaylistCreator();
+        JFrame sFrame = new JFrame("JCMusic | Playlist creator");
+        JPanel sPanel = new JPanel();
+
+        try {
+            File config = new File("config.txt");
+            Scanner reader = new Scanner(config);
+            background = reader.nextLine().trim();
+            foreground = reader.nextLine().trim();
+        } catch (Exception e) {
+            System.out.printf("error %s\n", e);
+        }
+
+        Color backgroundColor = parseColor(background);
+        Color foregroundColor = parseColor(foreground);
+
+        sPanel.setBackground(backgroundColor);
+        sPanel.setForeground(foregroundColor);
+        sPanel.setLayout(new GridLayout(0, 1, 2, 0));
+
+        JLabel title = new JLabel("Playlist editor", SwingConstants.CENTER);
+        title.setForeground(foregroundColor);
+        title.setBackground(backgroundColor);
+
+        JTextField playlistName = new JTextField("Enter playlist name here.", SwingConstants.CENTER);
+        playlistName.setBackground(backgroundColor);
+        playlistName.setForeground(foregroundColor);
+
+        JButton createPlaylistButton = new JButton("Create playlist");
+        createPlaylistButton.setBackground(backgroundColor);
+        createPlaylistButton.setForeground(foregroundColor);
+
+        JSeparator separator = new JSeparator();
+        separator.setForeground(foregroundColor);
+
+        JTextField songDir = new JTextField("Enter song directory here.");
+        songDir.setBackground(backgroundColor);
+        songDir.setForeground(foregroundColor);
+
+        JButton importSongsButton = new JButton("Import songs");
+        importSongsButton.setBackground(backgroundColor);
+        importSongsButton.setForeground(foregroundColor);
+
+
+        sPanel.add(title);
+        sPanel.add(playlistName);
+        //sPanel.add(createPlaylistButton);
+        sPanel.add(songDir);
+        sPanel.add(importSongsButton);
+        sFrame.add(sPanel);
+        
+
+        sFrame.setSize(250, 400);
+        sFrame.setLocationRelativeTo(null);
+        sFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        sFrame.setVisible(true);
+
+        createPlaylistButton.addActionListener(e -> {
+            new Thread(() -> {
+                pc.createPlaylist(playlistName.getText());
+            }).start();
+        });
+
+        importSongsButton.addActionListener(e -> {
+            new Thread(() -> {
+                try {
+                    pc.importSongs(playlistName.getText(), songDir.getText());
+                } catch (Exception er) {
+                    System.out.printf("error: %s\n", er);
+                }
+            }).start();
+        });
+    }
+
     private static void updateSongTitleAndSlider(JLabel songTitle, JSlider slider, Clip clip, String title) {
         SwingUtilities.invokeLater(() -> {
             songTitle.setText(title);
             slider.setMaximum((int) (clip.getMicrosecondLength() / 1_000_000));
             slider.setValue(0);
         });
+    }
+
+    public static Color parseColor(String colorString) {
+        switch (colorString) {
+            case "BLACK": return Color.BLACK;
+            case "WHITE": return Color.WHITE;
+            case "RED": return Color.RED;
+            case "GREEN": return Color.GREEN;
+            case "BLUE": return Color.BLUE;
+            case "GRAY": return Color.GRAY;
+            case "LIGHT_GRAY": return Color.LIGHT_GRAY;
+            case "DARK_GRAY": return Color.DARK_GRAY;
+            case "YELLOW": return Color.YELLOW;
+            case "ORANGE": return Color.ORANGE;
+            case "PINK": return Color.PINK;
+            case "CYAN": return Color.CYAN;
+            case "MAGENTA": return Color.MAGENTA;
+            default: return Color.BLACK; // Fallback color
+        }
     }
 }
