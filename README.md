@@ -12,6 +12,12 @@ The successor to CMusic!
 
 If you want the gui just launch the jar as normal.
 
+# Playlist editor
+1. In the first box, input the directory you want the playlist file to be written to (including the filename at the end)/
+2. Input the directory to scan songs (recursively scans directories for songs and imports them).
+3. Click import songs to finalize the playlist creation
+**Note:** this creates a new playlist file everytime, if you use an old playlist file name it WILL overwrite it completely (this will be subject to change).
+
 # Notes
 **Lots of things are subject to change considering this is still a beta**
 
