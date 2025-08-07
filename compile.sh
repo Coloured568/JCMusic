@@ -6,7 +6,7 @@
 OUTPUT_DIR="out"
 JAR_NAME="JCMusic.jar"
 MAIN_CLASS="JCMusic.Main"
-MANIFEST_VERSION="1.1"
+MANIFEST_VERSION="b0.0.3"
 
 # ================================
 # CLEAN PREVIOUS OUTPUT
