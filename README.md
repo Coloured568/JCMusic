@@ -38,7 +38,7 @@ Supports: the `.wav ,.aif, .aiff, .au, .snd` audio formats.
 
 # Well how do I add or remove specific songs from a playlist?
 Since it's still in development, it's still rather tedious.
-1. Open your `*.jcmpl* file
+1. Open your `*.jcmpl` file
 2. Add/Remove specific songs.
 
 Software design is my passion, how could you tell?
