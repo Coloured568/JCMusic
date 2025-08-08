@@ -8,7 +8,7 @@ The successor to CMusic!
 # Command line arguments
 --no-gui: runs the app in CLI mode
 - ex: `java -jar JCMusic.jar --no-gui`
-- or if you want to specify a playlist file directory: `java -jar JCMusic.jar --no-gui <yourplaylist.jcmpl.`
+- or if you want to specify a playlist file directory: `java -jar JCMusic.jar --no-gui <yourplaylist.jcmpl>`
 
 If you want the gui just launch the jar as normal.
 
