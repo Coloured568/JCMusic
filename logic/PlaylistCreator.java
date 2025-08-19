@@ -78,8 +78,8 @@ public class PlaylistCreator {
             String[] songFiles = dir.list();
 
             for(int i = 0; i < songFiles.length; i++) {
-                if(songFiles[i].endsWith(".wav")) {
-                    writer.write(songFiles[i]);
+                if(songFiles[i].endsWith(".wav") || songFiles[i].endsWith(".wav"))   {
+                    writer.write(directory + songFiles[i]);
                     writer.write(System.lineSeparator());
                     System.out.printf("Added song: %s\n", songFiles[i]);
                 }
