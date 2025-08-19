@@ -1,35 +1,54 @@
 package JCMusic;
 
+import javafx.application.Platform;
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Scanner;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.sound.sampled.Clip;
+
 import JCMusic.logic.Audio;
 import JCMusic.logic.PlaylistCreator;
 import JCMusic.logic.Playlists;
 
 public class GUI {
+    static {
+        // Static block runs once when the class is loaded, initializes JavaFX toolkit
+        try {
+            Platform.startup(() -> {
+                // No-op Runnable just to start JavaFX
+            });
+        } catch (IllegalStateException e) {
+            // JavaFX already initialized
+        }
+    }
+
     public static int index;
     public static String background;
     public static String foreground;
 
     public static void guiApp() {
-        final boolean[] isSeeking = { false };
-        final boolean[] isUpdatingSlider = { false };
+        final boolean[] isSeeking = {false};
+        final boolean[] isUpdatingSlider = {false};
 
         Audio audio = new Audio();
         Playlists playlists = new Playlists();
 
         JFrame frame = new JFrame("JCMusic");
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setSize(350, 500);
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0; // allows the column to grow in size
+        c.insets = new Insets(3, 3, 3, 3);
 
         try {
             File config = new File("config.txt");
-            if(config.createNewFile()) {
+            if (config.createNewFile()) {
                 FileWriter writer = new FileWriter(config);
                 System.out.println("Config file generated!");
                 writer.write("BLACK"); // background color
@@ -40,19 +59,18 @@ public class GUI {
                 writer.write(System.lineSeparator());
                 writer.write("// 2nd line represents the foreground color");
                 writer.close();
-                // parse colors
+
                 Scanner reader = new Scanner(config);
                 background = reader.nextLine().trim();
                 foreground = reader.nextLine().trim();
                 reader.close();
-
             } else {
                 Scanner reader = new Scanner(config);
                 background = reader.nextLine().trim();
                 foreground = reader.nextLine().trim();
+                reader.close();
             }
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.printf("error %s\n", e);
         }
 
@@ -61,7 +79,7 @@ public class GUI {
 
         panel.setBackground(backgroundColor);
         panel.setForeground(foregroundColor);
-        panel.setLayout(new GridLayout(0, 1, 2, 2));
+        panel.setLayout(new GridBagLayout());
 
         JLabel title = new JLabel("JCMusic", SwingConstants.CENTER);
         title.setForeground(foregroundColor);
@@ -101,162 +119,142 @@ public class GUI {
         loadPlaylistButton.setForeground(foregroundColor);
         loadPlaylistButton.setBackground(backgroundColor);
 
-        JTextField playlistName = new JTextField("Enter playlist filepath here (*.cmpl)");
+        JTextField playlistName = new JTextField("Enter playlist filepath here (*.cmpl, *.jcmpl)");
         playlistName.setForeground(foregroundColor);
         playlistName.setBackground(backgroundColor);
 
+        ImageIcon imageIcon = new ImageIcon("animation.gif"); // load the image to a imageIcon
+        Image image = imageIcon.getImage(); // transform it 
+        Image newimg = image.getScaledInstance(panel.getWidth(), 150, 0); // scale it the smooth way  
+        imageIcon = new ImageIcon(newimg);  // transform it back 
+        JLabel animation = new JLabel(imageIcon);
 
-        panel.add(title);
-        panel.add(songTitle);
-        panel.add(timeSlider);
-        panel.add(loadPlaylistButton);
-        panel.add(createPlaylistButton);
-        panel.add(playButton);
-        panel.add(resumeButton);
-        panel.add(pauseButton);
-        panel.add(skipButton);
-        panel.add(previousButton);
-        panel.add(playlistName);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        int paddingy = 1;
+
+        c.gridy = paddingy++;
+        panel.add(title, c);
+        c.gridy = paddingy++;
+        panel.add(songTitle, c);
+        c.gridy = paddingy++;
+        panel.add(timeSlider, c);
+        c.gridy = paddingy++;
+        panel.add(loadPlaylistButton, c);
+        c.gridy = paddingy++;
+        panel.add(createPlaylistButton, c);
+        c.gridy = paddingy++;
+        panel.add(playButton, c);
+        c.gridy = paddingy++;
+        panel.add(resumeButton, c);
+        c.gridy = paddingy++;
+        panel.add(pauseButton, c);
+        c.gridy = paddingy++;
+        panel.add(skipButton, c);
+        c.gridy = paddingy++;
+        panel.add(previousButton, c);
+        c.gridy = paddingy++;
+        panel.add(playlistName, c);
+        c.gridy = paddingy++;
+        panel.add(animation, c);
+        c.gridy = paddingy++;
+
         frame.add(panel);
 
-        createPlaylistButton.addActionListener(e -> {
+        createPlaylistButton.addActionListener(e -> new Thread(() -> createPlaylistGUI()).start());
+
+        loadPlaylistButton.addActionListener(e -> {
             new Thread(() -> {
-                createPlaylistGUI();
+                try {
+                    playlists.loadPlaylist(playlistName.getText());
+                    SwingUtilities.invokeLater(() -> songTitle.setText("Playlist loaded: " + playlistName.getText()));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }).start();
         });
 
-        // Load playlist on background thread
-        loadPlaylistButton.addActionListener(e -> {
-            new Thread(() -> {
-                    try {
-                        playlists.loadPlaylist(playlistName.getText());
-                        SwingUtilities.invokeLater(() -> {
-                            songTitle.setText("Playlist loaded: " + playlistName.getText());
-                        });
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }).start();
-            });
-
-        // Play button action on background thread
         playButton.addActionListener(e -> {
             new Thread(() -> {
                 index = 0;
                 if (playlists.songs.length > 0 && playlists.songs[index] != null) {
                     audio.playAudio(playlists.songs[index]);
-                    Clip clip = audio.getClip();
-                    SwingUtilities.invokeLater(() -> {
-                        updateSongTitleAndSlider(songTitle, timeSlider, clip, playlists.songs[index]);
+                    audio.setOnEndOfMedia(() -> {
+                        index = (index + 1) % playlists.songs.length;
+                        audio.playAudio(playlists.songs[index]);
+                        SwingUtilities.invokeLater(() -> songTitle.setText(new File(playlists.songs[index]).getName()));
                     });
+                    SwingUtilities.invokeLater(() -> songTitle.setText(new File(playlists.songs[index]).getName()));
                 }
             }).start();
         });
 
-        // Resume (fast, safe on EDT)
         resumeButton.addActionListener(e -> audio.resumeAudio());
 
-        // Pause (fast, safe on EDT)
         pauseButton.addActionListener(e -> audio.pauseAudio());
 
-        // Skip on background thread
         skipButton.addActionListener(e -> {
             new Thread(() -> {
-                if (audio.getClip() != null) {
-                    audio.stopAudio();
-                }
+                audio.stopAudio();
                 index = (index + 1) % playlists.songs.length;
-                if (playlists.songs[index] != null) {
+                audio.playAudio(playlists.songs[index]);
+                audio.setOnEndOfMedia(() -> {
+                    index = (index + 1) % playlists.songs.length;
                     audio.playAudio(playlists.songs[index]);
-                    Clip clip = audio.getClip();
-                    SwingUtilities.invokeLater(() -> {
-                        updateSongTitleAndSlider(songTitle, timeSlider, clip, playlists.songs[index]);
-                    });
-                }
+                    SwingUtilities.invokeLater(() -> songTitle.setText(new File(playlists.songs[index]).getName()));
+                });
+                SwingUtilities.invokeLater(() -> songTitle.setText(new File(playlists.songs[index]).getName()));
             }).start();
         });
 
-        // Previous on background thread
         previousButton.addActionListener(e -> {
             new Thread(() -> {
-                if (audio.getClip() != null) {
-                    audio.stopAudio();
-                }
+                audio.stopAudio();
                 index--;
-                if (index < 0) {
-                    index = playlists.songs.length - 1;
-                }
-                if (playlists.songs[index] != null) {
+                if (index < 0) index = playlists.songs.length - 1;
+                audio.playAudio(playlists.songs[index]);
+                audio.setOnEndOfMedia(() -> {
+                    index = (index + 1) % playlists.songs.length;
                     audio.playAudio(playlists.songs[index]);
-                    Clip clip = audio.getClip();
-                    SwingUtilities.invokeLater(() -> {
-                        updateSongTitleAndSlider(songTitle, timeSlider, clip, playlists.songs[index]);
-                    });
-                }
+                    SwingUtilities.invokeLater(() -> songTitle.setText(new File(playlists.songs[index]).getName()));
+                });
+                SwingUtilities.invokeLater(() -> songTitle.setText(new File(playlists.songs[index]).getName()));
             }).start();
         });
 
-        // Timer to update slider every 500ms, skips update if user is seeking
         Timer sliderTimer = new Timer(500, evt -> {
             if (isSeeking[0]) return;
 
-            Clip clip = audio.getClip();
-            if (clip != null && clip.isRunning()) {
-                int currentSec = (int) (clip.getMicrosecondPosition() / 1_000_000);
-                int totalSec = (int) (clip.getMicrosecondLength() / 1_000_000);
+            double current = audio.getCurrentPositionSeconds();
+            double total = audio.getTotalDurationSeconds();
 
+            if (total > 0) {
                 isUpdatingSlider[0] = true;
-                if (timeSlider.getMaximum() != totalSec) {
-                    timeSlider.setMaximum(totalSec);
+                if (timeSlider.getMaximum() != (int) total) {
+                    timeSlider.setMaximum((int) total);
                 }
-                if (timeSlider.getValue() != currentSec) {
-                    timeSlider.setValue(currentSec);
-                }
-
-                if (currentSec >= totalSec - 1) {
-                    // Run next track logic in background thread to avoid blocking EDT
-                    new Thread(() -> {
-                        if (audio.getClip() != null) {
-                            audio.stopAudio();
-                        }
-                        index = (index + 1) % playlists.songs.length;
-                        if (playlists.songs[index] != null) {
-                            audio.playAudio(playlists.songs[index]);
-                            Clip clip2 = audio.getClip();
-                            SwingUtilities.invokeLater(() -> {
-                                updateSongTitleAndSlider(songTitle, timeSlider, clip2, playlists.songs[index]);
-                            });
-                        }
-                    }).start();
+                if (timeSlider.getValue() != (int) current) {
+                    timeSlider.setValue((int) current);
                 }
                 isUpdatingSlider[0] = false;
             }
         });
         sliderTimer.start();
 
-        // Slider seeking logic
         timeSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (isUpdatingSlider[0]) return;
 
-                Clip clip = audio.getClip();
-                if (clip != null && clip.isOpen()) {
-                    if (timeSlider.getValueIsAdjusting()) {
-                        isSeeking[0] = true;
-                    } else {
-                        int seconds = timeSlider.getValue();
-                        boolean wasRunning = clip.isRunning();
-                        if (wasRunning) clip.stop();
-                        clip.setMicrosecondPosition(seconds * 1_000_000L);
-                        if (wasRunning) clip.start();
-
-                        isSeeking[0] = false;
-                    }
+                if (timeSlider.getValueIsAdjusting()) {
+                    isSeeking[0] = true;
+                } else {
+                    audio.seek(timeSlider.getValue());
+                    isSeeking[0] = false;
                 }
             }
         });
 
-        frame.setSize(250, 400);
+        frame.setSize(350, 500);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
@@ -272,6 +270,7 @@ public class GUI {
             Scanner reader = new Scanner(config);
             background = reader.nextLine().trim();
             foreground = reader.nextLine().trim();
+            reader.close();
         } catch (Exception e) {
             System.out.printf("error %s\n", e);
         }
@@ -295,9 +294,6 @@ public class GUI {
         createPlaylistButton.setBackground(backgroundColor);
         createPlaylistButton.setForeground(foregroundColor);
 
-        JSeparator separator = new JSeparator();
-        separator.setForeground(foregroundColor);
-
         JTextField songDir = new JTextField("Enter song directory here.");
         songDir.setBackground(backgroundColor);
         songDir.setForeground(foregroundColor);
@@ -306,25 +302,19 @@ public class GUI {
         importSongsButton.setBackground(backgroundColor);
         importSongsButton.setForeground(foregroundColor);
 
-
         sPanel.add(title);
         sPanel.add(playlistName);
-        //sPanel.add(createPlaylistButton);
         sPanel.add(songDir);
         sPanel.add(importSongsButton);
+        sPanel.add(createPlaylistButton);
         sFrame.add(sPanel);
-        
 
         sFrame.setSize(250, 400);
         sFrame.setLocationRelativeTo(null);
         sFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         sFrame.setVisible(true);
 
-        createPlaylistButton.addActionListener(e -> {
-            new Thread(() -> {
-                pc.createPlaylist(playlistName.getText());
-            }).start();
-        });
+        createPlaylistButton.addActionListener(e -> new Thread(() -> pc.createPlaylist(playlistName.getText())).start());
 
         importSongsButton.addActionListener(e -> {
             new Thread(() -> {
@@ -334,14 +324,6 @@ public class GUI {
                     System.out.printf("error: %s\n", er);
                 }
             }).start();
-        });
-    }
-
-    private static void updateSongTitleAndSlider(JLabel songTitle, JSlider slider, Clip clip, String title) {
-        SwingUtilities.invokeLater(() -> {
-            songTitle.setText(title);
-            slider.setMaximum((int) (clip.getMicrosecondLength() / 1_000_000));
-            slider.setValue(0);
         });
     }
 
