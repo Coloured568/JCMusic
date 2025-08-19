@@ -3,10 +3,10 @@ The successor to CMusic!
 
 # How do I run the application?
 1. Install Java 24 here -> [https://www.oracle.com/java/technologies/javase/jdk24-archive-downloads.html](https://www.oracle.com/java/technologies/downloads/#java24)
-2. Open the jar file!
+2. Open the `run.bat` file!
 
 # Command line arguments
---no-gui: runs the app in CLI mode
+--no-gui: runs the app in CLI mode (**CURRENTLY BROKEN/VERY BUGGY**)
 - ex: `java -jar JCMusic.jar --no-gui`
 - or if you want to specify a playlist file directory: `java -jar JCMusic.jar --no-gui <yourplaylist.jcmpl>`
 
@@ -20,11 +20,12 @@ If you want the gui just launch the jar as normal.
 
 # Customization
 Simply just modify the colors in `config.txt`.
+And, drag and drop a gif called `animation.gif` in your `JCMusic.jar` directory to get a custom gif to show up!
 
 # Notes
 **Lots of things are subject to change considering this is still a beta**
 
-This was made in JDK 23, please install it if you plan on using/contirbuting this JCMusic!
+This was made in JDK 24, please install it if you plan on using/contirbuting this JCMusic!
 Alongside this certain features haven't been ported yet, such as themes and the legacy playlist format.
 MP3s are not supported yet.
 Supports: the `.wav ,.aif, .aiff, .au, .snd` audio formats.
