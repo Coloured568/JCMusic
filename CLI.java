@@ -5,9 +5,9 @@ import JCMusic.logic.PlaylistCreator;
 import JCMusic.logic.Playlists;
 
 import java.util.Scanner;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.Clip;
+import javafx.embed.swing.JFXPanel;
 import javax.swing.SwingUtilities;
+import javafx.application.Platform;
 
 public class CLI {
     public static int index;
@@ -17,13 +17,15 @@ public class CLI {
     private static Thread playbackThread;
 
     public static void cliApp() {
+        new JFXPanel();
+
         Audio audio = new Audio();
         Playlists playlists = new Playlists();
         Scanner scanner = new Scanner(System.in);
         PlaylistCreator pc = new PlaylistCreator();
 
         if (!dirSpecified) {
-            System.out.println("Enter playlist directory (*.jcmpl): ");
+            System.out.println("Enter playlist directory (*.cmpl, *.jcmpl): ");
             playlistName = scanner.nextLine();
         }
 
@@ -57,32 +59,30 @@ public class CLI {
                                 playbackThread = new Thread(() -> {
                                     while (isPlaying && index < playlists.songs.length) {
                                         audio.playAudio(playlists.songs[index]);
-                                
-                                        // Update UI on the Event Dispatch Thread
                                         int currentIndex = index;
+
                                         SwingUtilities.invokeLater(() -> startTrack(audio, playlists, currentIndex));
-                                
-                                        // Wait while the clip is playing
-                                        Clip clip = audio.getClip();
-                                        while (clip != null && clip.isRunning()) {
+
+                                        // Wait until track ends
+                                        while (audio.isPlaying()) {
                                             try {
-                                                Thread.sleep(200); // Don't block the UI
+                                                Thread.sleep(200);
                                             } catch (InterruptedException e) {
                                                 return;
                                             }
                                             if (!isPlaying) break;
                                         }
-                                
+
                                         if (!isPlaying) break;
                                         index++;
                                     }
-                                
+
                                     if (index >= playlists.songs.length) {
                                         isPlaying = false;
                                         System.out.println("\nReached end of playlist.");
                                     }
                                 });
-                                
+
                                 playbackThread.start();
                             }
                         } else {
@@ -116,76 +116,68 @@ public class CLI {
                             audio.stopAudio();
                             index++;
                             isPlaying = true;
-                    
+
                             if (playbackThread != null && playbackThread.isAlive()) {
                                 playbackThread.interrupt();
                             }
-                    
+
                             playbackThread = new Thread(() -> {
                                 audio.playAudio(playlists.songs[index]);
-                    
-                                // update UI
                                 int currentIndex = index;
                                 SwingUtilities.invokeLater(() -> startTrack(audio, playlists, currentIndex));
-                    
-                                Clip clip = audio.getClip();
-                                while (clip != null && clip.isRunning()) {
+
+                                while (audio.isPlaying()) {
                                     try {
                                         Thread.sleep(200);
                                     } catch (InterruptedException e) {
                                         return;
                                     }
                                 }
-                    
+
                                 index++;
                                 if (index >= playlists.songs.length) {
                                     isPlaying = false;
                                     System.out.println("\nReached end of playlist.");
                                 }
                             });
-                    
+
                             playbackThread.start();
                         }
                         break;
-                    
 
                     case "b":
                         if (index > 0) {
                             audio.stopAudio();
                             index--;
                             isPlaying = true;
-                    
+
                             if (playbackThread != null && playbackThread.isAlive()) {
                                 playbackThread.interrupt();
                             }
-                    
+
                             playbackThread = new Thread(() -> {
                                 audio.playAudio(playlists.songs[index]);
-                    
-                                // update UI
                                 int currentIndex = index;
                                 SwingUtilities.invokeLater(() -> startTrack(audio, playlists, currentIndex));
-                    
-                                Clip clip = audio.getClip();
-                                while (clip != null && clip.isRunning()) {
+
+                                while (audio.isPlaying()) {
                                     try {
                                         Thread.sleep(200);
                                     } catch (InterruptedException e) {
                                         return;
                                     }
                                 }
-                    
+
                                 index++;
                                 if (index >= playlists.songs.length) {
                                     isPlaying = false;
                                     System.out.println("\nReached end of playlist.");
                                 }
                             });
-                    
+
                             playbackThread.start();
                         }
                         break;
-                    
 
                     case "editor":
                         System.out.println("Enter playlist name.");
@@ -239,33 +231,10 @@ public class CLI {
     }
 
     private static void startTrack(Audio audioInstance, Playlists playlistsInstance, int currentIndex) {
-        Clip clip = audioInstance.getClip();
-        AudioFormat format = clip.getFormat();
-        float sampleRate = format.getFrameRate();
-
-        while (isPlaying && clip.isRunning()) {
-            long framePosition = clip.getLongFramePosition();
-            double seconds = framePosition / sampleRate;
-
-            int totalSeconds = (int) seconds;
-            int minutes = totalSeconds / 60;
-            int secondsPart = totalSeconds % 60;
-
-            clearConsole();
-            System.out.println("JCMPL");
-            System.out.println("-------");
-            System.out.printf("Now playing: %s (%d/%d)\n", playlistsInstance.songs[currentIndex], currentIndex + 1, playlistsInstance.songs.length);
-            System.out.println("Playlist: " + playlistName);
-            System.out.printf("Time: %02d:%02d\n", minutes, secondsPart);
-            System.out.print("Controls: 'p' = play, 's' = stop, 'q' = quit, 'n' = next track, 'b' = previous track");
-            System.out.print("\n> ");
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
+        clearConsole();
+        System.out.println("Now playing: " + playlistsInstance.songs[currentIndex]);
+        System.out.printf("Track %d of %d\n", currentIndex + 1, playlistsInstance.songs.length);
+        System.out.println("Playlist: " + playlistName);
     }
 
     private static void clearConsole() {
