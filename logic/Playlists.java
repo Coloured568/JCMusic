@@ -5,6 +5,7 @@ import java.util.*;
 
 public class Playlists {
     public static int index = 0;
+    // this fr might need to change later
     public static String[] tempSongs = new String[10000]; // this isn't quite "elegant" but it makes indexing easier.
     public static String[] songs;
     
